@@ -5,6 +5,7 @@ metadata:
   labels:
     app: {{ SERVICE_NAME }}
 spec:
+  serviceName: {{ SERVICE_NAME }}
   selector:
     matchLabels:
       app: {{ SERVICE_NAME }}
@@ -15,7 +16,6 @@ spec:
       labels:
         app: {{ SERVICE_NAME }}
     spec:
-      serviceName: {{ SERVICE_NAME }}
       containers:
       - name: {{ SERVICE_NAME }}
         image: {{ IMAGE_NAME }}
