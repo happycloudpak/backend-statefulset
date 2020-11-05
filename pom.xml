@@ -57,7 +57,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>backend-service</finalName>
+		<finalName>backend-statefulset</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
