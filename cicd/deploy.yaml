@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ SERVICE_NAME }}
   labels:
@@ -15,6 +15,7 @@ spec:
       labels:
         app: {{ SERVICE_NAME }}
     spec:
+      serviceName: {{ SERVICE_NAME }}
       containers:
       - name: {{ SERVICE_NAME }}
         image: {{ IMAGE_NAME }}
