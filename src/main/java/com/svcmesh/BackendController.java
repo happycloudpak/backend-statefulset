@@ -69,7 +69,7 @@ public class BackendController {
 		/*
 		 * Disconvery Client 사용 예제 : L/B를 수동으로 해야  
 		  
-		List <ServiceInstance> instances = discoveryClient.getInstances("backend-provider-service");
+		List <ServiceInstance> instances = discoveryClient.getInstances("backend-provider");
 		if(instances.size()==0) {
 			System.out.println("*** NO Provider service!!!");
 			return "NO DATA";
@@ -81,7 +81,7 @@ public class BackendController {
 		*/
 		String baseUrl = "";
 		try {
-			ServiceInstance instance = lbClient.choose("backend-provider-service");
+			ServiceInstance instance = lbClient.choose("backend-provider");
 			baseUrl = instance.getUri().toString()+"/provider/"+message;
 			System.out.println("Url: "+ baseUrl);
 		} catch(Exception e) {
