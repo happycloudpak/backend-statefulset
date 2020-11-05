@@ -1,0 +1,38 @@
+#!/bin/bash
+
+echo "************* BUILD&PUSH Container image *****************"
+
+# get parameters
+username=$1
+password=$2
+basedir=$3
+
+# set variables from config.properties
+while read line
+do
+  x=$(echo $line | grep "#")
+  if [ $? -eq 1 ]; then
+    y=$(echo $line | grep "=")
+    if [ $? -eq 0 ]; then
+        export ${line}   
+    fi
+  fi 
+done < ${basedir}/cicd/config.properties
+
+# build image
+echo "image: ${image_registry}/${image_project}/${image_repository}:${image_tag}"
+docker build -f ${basedir}/cicd/Dockerfile -t ${image_registry}/${image_project}/${image_repository}:${image_tag} ${basedir}
+
+# login image registry to push image: parameters are provided from bamboo pipeline.
+docker login ${image_registry} -u  ${username} -p ${password}
+if [ $? == 1 ]; then
+  echo "****** FAIL to login image registry: username is $1"
+  exit 2
+fi
+
+# clone image as 'latest'
+docker tag ${image_registry}/${image_project}/${image_repository}:${image_tag} ${image_registry}/${image_project}/${image_repository}:latest
+
+# push them
+docker push ${image_registry}/${image_project}/${image_repository}:${image_tag}
+docker push ${image_registry}/${image_project}/${image_repository}:latest

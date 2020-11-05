@@ -1,0 +1,63 @@
+#!/bin/bash
+
+echo "************* DEPLOY service *****************"
+
+# get parameters
+if ([ $# -lt 2 ]) || ([ $# -eq 1 ] && [ "$1" == "-h" -o "$1" == "--help" ]); then
+  echo "deploy <k8s-context> <root directory>"
+  echo " k8s-context: 사용할 k8s context명. kubectl config view로 context 목록 확인. '.'은 현재 컨텍스트 의미함 "
+  echo " root directory: project의 최상위 디렉토리. '.'은 현재 디렉토리 의미함. "
+  echo " ex) ./deploy kubernetes-admin@kubernetes ~/work"
+  echo " ex) ./deploy . ."
+  exit 2
+fi
+
+context=$1
+basedir=$2
+
+if [ "${context}" == "." ]; then
+	context=`kubectl config current-context`
+fi
+ 
+# set variables from config.properties
+while read line
+do
+  x=$(echo $line | grep "#")
+  if [ $? -eq 1 ]; then
+    y=$(echo $line | grep "=")
+    if [ $? -eq 0 ]; then
+        export ${line}   
+    fi
+  fi
+done < ${basedir}/cicd/config.properties
+
+# switch kubenetes context
+kubectl config use-context ${context}
+
+# check current version
+CURTAG=$(kubectl get deploy ${image_repository} -o yaml | grep "image: ${image_registry}/${image_project}/${image_repository}:" | cut -d ':' -f3)
+echo "FIND CURRENT VERSION: ${CURTAG}"
+
+# 동일한 서비스의 동일한 버전이 있으면 변경내용 반영위해 기존 deployment 삭제
+if [ $? -eq 0 ] && [ "${CURTAG}" == "${image_tag}" ]; then
+    echo "[${image_repository}] Same version(${image_tag}) service exists!"
+
+    kubectl delete deploy --selector="app=${image_repository}"
+fi
+
+# deploy.yaml을 이용하여 배포 yaml생성
+IMG="${image_registry}\/${image_project}\/${image_repository}:${image_tag}"
+sed "s@{{ SERVICE_NAME }}@${image_repository}@g" ${basedir}/cicd/deploy.yaml | \
+sed "s@{{ IMAGE_NAME }}@${IMG}@g" - | \
+sed "s@{{ SERVICE_TARGET_PORT_ENV }}@${service_target_port_env}@g" - | \
+sed "s@{{ SERVICE_TARGET_PORT }}@${service_target_port}@g" - | \
+sed "s@{{ SERVICE_PORT }}@${service_port}@g" - | \
+sed "s@{{ SERVICE_REPLICAS }}@${service_replicas}@g" - | \
+sed "s@{{ EUREKA_SERVERS }}@${eureka_servers}@g" - | \
+sed "s@{{ SERVICE_HOST }}@${service_host}@g" - > ${basedir}/cicd/deploy-converted.yaml
+
+if [ $? -eq 0 ]; then
+    kubectl apply -f ${basedir}/cicd/deploy-converted.yaml
+else
+    echo "******** FAIL to convert deployment yaml !!! ******** "
+fi

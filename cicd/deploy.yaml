@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ SERVICE_NAME }}
+  labels:
+    app: {{ SERVICE_NAME }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ SERVICE_NAME }}
+  replicas: {{ SERVICE_REPLICAS }}
+  template:
+    metadata:
+      name: {{ SERVICE_NAME }}
+      labels:
+        app: {{ SERVICE_NAME }}
+    spec:
+      containers:
+      - name: {{ SERVICE_NAME }}
+        image: {{ IMAGE_NAME }}
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_PORT
+          value: {{ SERVICE_TARGET_PORT_ENV }}   
+        - name: EUREKA_SERVERS
+          value: {{ EUREKA_SERVERS }}
+        ports:
+        - name: port1
+          containerPort: 18180
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 512m
+            memory: 1024Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ SERVICE_NAME }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ SERVICE_NAME }}
+  ports:
+  - name: port1
+    port: {{ SERVICE_PORT }}
+    targetPort: {{ SERVICE_TARGET_PORT }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: {{ SERVICE_NAME }}
+spec:
+  rules:
+  - host: {{ SERVICE_HOST }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service: 
+            name: {{ SERVICE_NAME }} 
+            port: 
+              number: {{ SERVICE_PORT }}
