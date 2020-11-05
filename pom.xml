@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.svcmesh</groupId>
-	<artifactId>backend-service</artifactId>
+	<artifactId>backend-statefulset</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>backend-service</name>
+	<name>backend-statefulset</name>
 	<description>Backend Service sample</description>
 
 	<properties>
