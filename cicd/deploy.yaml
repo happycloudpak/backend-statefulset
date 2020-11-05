@@ -42,6 +42,7 @@ metadata:
   name: {{ SERVICE_NAME }}
 spec:
   type: ClusterIP
+  clusterIP: None
   selector:
     app: {{ SERVICE_NAME }}
   ports:
