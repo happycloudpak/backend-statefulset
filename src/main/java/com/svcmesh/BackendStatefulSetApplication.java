@@ -6,9 +6,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class BackendServiceApplication {
+public class BackendStatefulSetApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BackendServiceApplication.class, args);
+		SpringApplication.run(BackendStatefulSetApplication.class, args);
 	}
 }
